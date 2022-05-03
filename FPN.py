@@ -12,7 +12,7 @@ class FPN(torch.nn.Module):
         self.out_channels = output_channels
         self.output_feature_shape = output_feature_sizes
         self.model=torchvision.models.resnet34(pretrained=True)
-        self.fpn= torchvision.ops.FeaturePyramidNetwork(in_channels_list=[64, 128, 256], out_channels=[64, 128, 256])
+        self.fpn= torchvision.ops.FeaturePyramidNetwork(in_channels_list=[64, 128, 256, 512, 256, 64], out_channels=256)
         
         #2 More Features
         self.layer5 = nn.Sequential(
@@ -106,11 +106,3 @@ class FPN(torch.nn.Module):
             
         
         
-        
-        
-         
-        
-            
-            
-            
-            
