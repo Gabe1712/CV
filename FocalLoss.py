@@ -5,15 +5,19 @@ import math
 import torch.nn.functional as F
 
 def calculate_focal_loss(confs,gt_labels,alpha,gamma):
-    weight=alpha.view(1,-1,1).cuda()
-    softmax=-(1-F.softmax(confs,dim=1))**gamma
-    onehot=F.one_hot(gt_labels,num_classes=confs.size(dim=1))
-    onehot=torch.transpose(onehot,2,1)
-    to_log=F.log_softmax(confs,dim=1)
-    focal_loss=weight*softmax*onehot*to_log
-    focal_loss=focal_loss.sum()
+    softmax = -(1-F.softmax(confs,dim=1))**gamma
 
-    return focal_loss
+    onehot = F.one_hot(gt_labels,num_classes=confs.size(dim=1))
+
+    onehot = torch.transpose(onehot,2,1)
+
+    log = F.log_softmax(confs,dim=1)
+
+    weight = alpha.view(1,-1,1).cuda()
+
+    focal_loss = weight*softmax*onehot*log
+    
+    return focal_loss.sum()
 
 
 

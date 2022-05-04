@@ -16,6 +16,9 @@ from ssd.data import MNISTDetectionDataset
 from torch.optim.lr_scheduler import MultiStepLR, LinearLR
 #from ssd.modeling import SSD300, SSDMultiboxLoss, backbones
 from ssd.modeling.FocalLoss import FocalLoss
+
+
+from ssd.modeling.retinanet import RetinaNet
 ##
 
 
@@ -39,8 +42,9 @@ from ..tdt4265 import (
 # The images in the tdt4265 dataset are of size 128 * 1024, so resizing to 300*300 is probably a bad idea
 # Change the imshape to (128, 1024) and experiment with better prior boxes
 train.imshape = (128, 1024)
-train.epochs = 40
+train.epochs = 20
 
+#Task 2.1
 anchors = L(AnchorBoxes)(
     feature_sizes=[[32, 256], [16, 128], [8, 64], [4, 32], [2, 16], [1, 8]],
     # Strides is the number of pixels (in image space) between each spatial position in the feature map
@@ -51,12 +55,13 @@ anchors = L(AnchorBoxes)(
     # aspect ratio is used to define two boxes per element in the list.
     # if ratio=[2], boxes will be created with ratio 1:2 and 2:1
     # Number of boxes per location is in total 2 + 2 per aspect ratio
-    aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2], [2]],
+    aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]], #put the "aspect_ratios" for the anchor boxes the same at every feature map.
     image_shape="${train.imshape}",
     scale_center_variance=0.1,
     scale_size_variance=0.2
 )
 
+#Task 2.2
 train_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
     L(RandomSampleCrop)(),
     L(ToTensor)(),
@@ -65,10 +70,23 @@ train_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
     L(GroundTruthBoxesToAnchors)(anchors="${anchors}", iou_threshold=0.5),
 ])
 
+#Task 2.3.1
 backbone = L(FPN)(
     output_channels=[256, 256, 256, 256, 256, 256],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
 )
 
+#Task 2.3.2
 loss_objective=L(FocalLoss)(anchors="${anchors}",alpha=[0.01,*[1 for i in range(model.num_classes-1)]],gamma=2)
+
+
+#Task 2.3.3 ( In Progress... )
+model = L(RetinaNet)(
+    feature_extractor="${backbone}",
+    anchors="${anchors}",
+    loss_objective="${loss_objective}",
+    num_classes=8 + 1 , # Add 1 for background
+    num_boxes =6,
+    num_channels=256
+)

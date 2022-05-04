@@ -38,7 +38,7 @@ from ..tdt4265 import (
 # The images in the tdt4265 dataset are of size 128 * 1024, so resizing to 300*300 is probably a bad idea
 # Change the imshape to (128, 1024) and experiment with better prior boxes
 train.imshape = (128, 1024)
-train.epochs = 40
+train.epochs = 20
 
 anchors = L(AnchorBoxes)(
     feature_sizes=[[32, 256], [16, 128], [8, 64], [4, 32], [2, 16], [1, 8]],
@@ -57,7 +57,7 @@ anchors = L(AnchorBoxes)(
 )
 
 backbone = L(FPN)(
-    output_channels=[264, 264, 264, 264, 264, 264],
+    output_channels=[256, 256, 256, 256, 256, 256],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
 )
